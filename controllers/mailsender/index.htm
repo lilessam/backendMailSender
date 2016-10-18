@@ -1,0 +1,179 @@
+<?php
+ /*****************************************************************************
+ ******************************************************************************
+ ************************************ Mail Sender *****************************
+ *                                                                            *
+ *                              Developed By Lil'Essam                        *
+ *                                                                            *
+ *****************************************************************************/
+?>
+<!-- TinyMCE Including -->
+<script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
+<!-- Setting all textareas to use NicEdit -->
+<script>tinymce.init({ selector:'textarea' });</script>
+<!-- End NicEdit Including -->
+<div class="container">
+    <div class="row">
+
+      <!-- Start callout -->
+      <div class="callout fade in callout-warning no-icon no-subheader">
+            <div class="header">
+                <h3><?php echo Lang::get('lilessam.mailsender::lang.callout.title'); ?></h3>
+            </div>
+            <div class="content">
+                <p><?php echo Lang::get('lilessam.mailsender::lang.callout.body'); ?></p>
+            </div>
+        </div>
+        <!-- End callout -->
+
+        <!-- Start form -->
+
+<?= Form::open(['files' => true, 'request' => 'onSendMail']) ?>
+
+            <!-- Selecting a group -->
+            <div class="form-group">
+                <!-- Label for group -->
+                <label for="group"><?php echo Lang::get('lilessam.mailsender::lang.controller.groups'); ?></label>
+                <!-- End Label for group -->
+
+                <!-- Selecting -->
+                <select class="form-control" id="group" name="group">
+                     <?php
+                        foreach ($groups as $group)
+                        {
+                        ?>
+                            <option value="<?= $group->id ?>"><?= $group->name ?></option>
+                        <?php
+                        }
+                        ?>
+                </select>
+                <!-- End Selecting -->
+            </div>
+            <!-- End of Selecting a group -->
+
+            <!-- min-height: 450px;height: 450px;display: block;overflow-x: scroll;width: 50vw; -->
+            <!-- Selected Users -->
+            <div class="control-list list-unresponsive" id="usersTable" style="overflow-y:scroll; overflow-x:hidden; height:300px;display: block;width: 100%;">
+                <table class="table data" data-control="rowlink" >
+                    <thead>
+                        <tr>
+                            <th class="list-checkbox">
+                                
+                            </th>
+                            <th class="sort-desc"><a href="/"><?php echo Lang::get('lilessam.mailsender::lang.username'); ?></a></th>
+                            <th class="sort-desc"><a href="/"><?php echo Lang::get('lilessam.mailsender::lang.email'); ?></a></th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+           
+                    </tbody>
+                </table>
+            </div>
+            <!-- End Selected Users -->
+
+            <!-- Message Subject -->
+            <div class="form-group">
+                <!-- Label for subject -->
+                <label for="subject"><?php echo Lang::get('lilessam.mailsender::lang.controller.subject'); ?></label>
+                <!-- End label -->
+
+                <!-- Start subject field -->
+                <input type="text" id="subject" name="subject" class="form-control" placeholder="<?php echo Lang::get('lilessam.mailsender::lang.controller.typesubject'); ?>"/>
+                <!-- End subject field -->
+            </div>
+            <!-- End Message Subject -->
+
+            <!-- Typing the message -->
+            <div class="form-group">
+                <!-- Label for message -->
+                <label for="message"><?php echo Lang::get('lilessam.mailsender::lang.controller.message'); ?></label>
+                <!-- End label for message -->
+
+                <!-- Start rich editor for message -->
+                <textarea id="message" name="message" class="form-control" placeholder="<?php echo Lang::get('lilessam.mailsender::lang.controller.type'); ?>">
+                </textarea>
+                <!-- End rich editor for message -->
+            </div>
+            <!-- End Typing the message -->
+            
+            <!-- Attachment -->
+            <label><?php if(\APP::getLocale() == "ar"){ echo "اختر مرفقًا"; }else{ echo "Choose attachment"; } ?></label>
+
+            <input type="file" name="attachment" class="form-control">
+            <!-- End Attachment -->
+
+            <!-- Sending Button -->
+            <div class="form-group pull-right" id="sendAll">
+                <button class="btn btn-primary" type="submit"><?php echo Lang::get('lilessam.mailsender::lang.controller.submit'); ?></button>
+            </div>
+            <!-- End Sengin Button -->
+            <br>
+            <!-- HR -->
+            <hr>
+            
+            <!-- Start Send Test Mail form -->
+                    <h4><?php echo Lang::get('lilessam.mailsender::lang.test.text'); ?></h4>
+                            <!-- Test email -->
+                            <div class="form-group">
+                                <!-- test email label -->
+                                <label for="email"><?= Lang::get('lilessam.mailsender::lang.test.email') ?></label>
+                                <!-- end test email label -->
+                                <input type="text" class="form-control" name="testEmail" 
+                                data-request="onCheckTestEmail"
+		        	data-request-success="if( data.correct == 1) { $('#sendAll').hide() }else{$('#sendAll').show() }"
+		        	data-track-input
+		            	id="testEmail"
+                                placeholder="<?= Lang::get('lilessam.mailsender::lang.test.email_placeholder') ?>">
+                            </div>
+                            <!-- End test mail -->
+                      <div class="form-group pull-right">
+                        <button type="submit" class="btn btn-primary"><?= Lang::get('lilessam.mailsender::lang.test.send_mail') ?></button>
+                      </div>
+            <!-- End Send Test Mail form -->
+           <?= Form::close() ?>
+            <!-- End form -->
+    </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    //Getting group id
+    var group_id = $("#group").val();
+    //Getting the users
+    $('form').request('onGetUsers', {
+        data: {group_id: group_id},
+        success: function(data) {
+            $("#usersTable").show();
+            $.each( data.users, function( key, value ) {
+                $("tbody").append(
+                    '<tr><td class="list-checkbox nolink"><div class="checkbox custom-checkbox nolabel"><input id="checkbox_'+ value.id +'" name="user['+ value.id +']" type="checkbox" /><label for="checkbox_'+ value.id +'" >Check</label></div></td><td>' + value.login + '</td><td>'+ value.email +'</td></tr>'
+                    );
+            });      
+             
+          }
+    });
+
+    $("#group").change(function(){
+        //The new group id
+        var group_id_new = $("#group").val();
+        //Getting the users
+        $('form').request('onGetUsers', {
+        data: {group_id: group_id_new},
+        success: function(data) {
+            $("#usersTable").show();
+            $("tbody").html("");
+            $.each( data.users, function( key, value ) {
+                $("tbody").append(
+                    '<tr><td class="list-checkbox nolink"><div class="checkbox custom-checkbox nolabel"><input id="checkbox_'+ value.id +'" name="user['+ value.id +']" type="checkbox" /><label for="checkbox_'+ value.id +'" >Check</label></div></td><td>' + value.login + '</td><td>'+ value.email +'</td></tr>'
+                    );
+            });      
+             
+          }
+    });
+    });
+
+
+});
+
+</script>
