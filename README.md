@@ -8,6 +8,8 @@ Plugin can be used for sending mails to any of backend user groups.
 * Sending HTML mails.
 * Advanced editor.
 * Ability to send test mails.
+* Specify users to send.
+* Attachments.
 
 ###Available languages
 * en - English
@@ -19,8 +21,7 @@ Plugin can be used for sending mails to any of backend user groups.
 1. Upload folder __mailsender__ to __lilesssam__ folder.
 1. Login into your backend control panel __>__ __Mail Sender__.
 
-####Via Composer
-`composer require lilessam/mailsender dev-master --dev`
+
 
 ###Modify backend user groups
 1. Go to the __Settings__ page in Backend.
